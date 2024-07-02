@@ -44,16 +44,23 @@ if st.button('Graficar'):
     # Mostrar el gráfico en la aplicación Streamlit
     st.plotly_chart(fig)
 
+    # Inicializar el estado de la sesión para los selectbox
+    if 'selected_x_value' not in st.session_state:
+        st.session_state.selected_x_value = None
+    if 'selected_y_value' not in st.session_state:
+        st.session_state.selected_y_value = None
+
     # Selectbox para valores únicos de las columnas seleccionadas
     unique_x_values = df[x_axis].dropna().unique()
     unique_y_values = df[y_axis].dropna().unique()
 
-    selected_x_value = st.selectbox(f'Selecciona un valor de {x_axis}', unique_x_values)
-    selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_values)
+    selected_x_value = st.selectbox(f'Selecciona un valor de {x_axis}', unique_x_values, key='selected_x_value')
+    selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_values, key='selected_y_value')
 
     # Filtrar el dataframe según las selecciones
-    filtered_df = df.loc[(df[x_axis] == selected_x_value) & (df[y_axis] == selected_y_value)]
+    if st.session_state.selected_x_value is not None and st.session_state.selected_y_value is not None:
+        filtered_df = df.loc[(df[x_axis] == st.session_state.selected_x_value) & (df[y_axis] == st.session_state.selected_y_value)]
 
-    # Mostrar el dataframe filtrado
-    st.write('Dataframe filtrado:')
-    st.dataframe(filtered_df)
+        # Mostrar el dataframe filtrado
+        st.write('Dataframe filtrado:')
+        st.dataframe(filtered_df)
