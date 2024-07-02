@@ -5,6 +5,12 @@ import plotly.express as px
 # Leer el archivo CSV
 df = pd.read_csv('vehicles_us.csv')
 
+# Reemplazar NaN con 'No' y 1.0 con 'Sí'
+df['is_4wd'] = df['is_4wd'].fillna(0).map({1.0: 'Sí', 0.0: 'No'})
+
+# Guardar el DataFrame actualizado en el archivo CSV
+df.to_csv('vehicles_us_updated.csv', index=False)
+
 # Título de la aplicación
 st.title('Lista de Vehículos')
 
@@ -22,8 +28,8 @@ Para generar un gráfico de dispersión:
 
 # Selección de variables para el gráfico de dispersión
 st.header('Generar Gráfico de Dispersión')
-x_axis = st.selectbox('Selecciona la variable para el eje X', df.columns)
-y_axis = st.selectbox('Selecciona la variable para el eje Y', df.columns)
+x_axis = st.selectbox('Selecciona la variable para el eje X', df.columns, key='x_axis')
+y_axis = st.selectbox('Selecciona la variable para el eje Y', df.columns, key='y_axis')
 
 # Botón para generar el gráfico
 if st.button('Graficar'):
@@ -41,26 +47,42 @@ if st.button('Graficar'):
         title=f'Dispersión de {x_axis} vs {y_axis} con Tamaño de Burbujas por Cantidad'
     )
     
-    # Mostrar el gráfico en la aplicación Streamlit
-    st.plotly_chart(fig)
+    # Guardar la gráfica en el estado de la sesión para que persista
+    st.session_state['fig'] = fig
 
-    # Inicializar el estado de la sesión para los selectbox
-    if 'selected_x_value' not in st.session_state:
-        st.session_state.selected_x_value = None
-    if 'selected_y_value' not in st.session_state:
-        st.session_state.selected_y_value = None
+# Mostrar el gráfico guardado si existe en el estado de la sesión
+if 'fig' in st.session_state:
+    st.plotly_chart(st.session_state['fig'])
 
-    # Selectbox para valores únicos de las columnas seleccionadas
-    unique_x_values = df[x_axis].dropna().unique()
-    unique_y_values = df[y_axis].dropna().unique()
+# Inicializar el estado de la sesión para los selectbox de filtrado
+if 'selected_x_value' not in st.session_state:
+    st.session_state.selected_x_value = None
+if 'selected_y_value' not in st.session_state:
+    st.session_state.selected_y_value = None
 
-    selected_x_value = st.selectbox(f'Selecciona un valor de {x_axis}', unique_x_values, key='selected_x_value')
-    selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_values, key='selected_y_value')
+# Función para ordenar valores únicos
+def sort_unique_values(values):
+    if pd.api.types.is_numeric_dtype(values):
+        return sorted(values)
+    else:
+        return sorted(values, key=str)
 
-    # Filtrar el dataframe según las selecciones
-    if st.session_state.selected_x_value is not None and st.session_state.selected_y_value is not None:
-        filtered_df = df.loc[(df[x_axis] == st.session_state.selected_x_value) & (df[y_axis] == st.session_state.selected_y_value)]
+# Selectbox para valores únicos de las columnas seleccionadas
+unique_x_values = sort_unique_values(df[x_axis].dropna().unique())
+selected_x_value = st.selectbox(f'Selecciona un valor de {x_axis}', unique_x_values, key='selected_x_value')
 
-        # Mostrar el dataframe filtrado
-        st.write('Dataframe filtrado:')
-        st.dataframe(filtered_df)
+# Filtrar el dataframe según la selección del eje X para obtener valores únicos válidos para el eje Y
+if selected_x_value:
+    unique_y_values = sort_unique_values(df[df[x_axis] == selected_x_value][y_axis].dropna().unique())
+else:
+    unique_y_values = sort_unique_values(df[y_axis].dropna().unique())
+
+selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_values, key='selected_y_value')
+
+# Filtrar el dataframe según las selecciones
+if selected_x_value and selected_y_value:
+    filtered_df = df.loc[(df[x_axis] == selected_x_value) & (df[y_axis] == selected_y_value)]
+
+    # Mostrar el dataframe filtrado
+    st.write('Dataframe filtrado:')
+    st.dataframe(filtered_df)
