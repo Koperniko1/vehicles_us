@@ -43,3 +43,17 @@ if st.button('Graficar'):
     
     # Mostrar el gráfico en la aplicación Streamlit
     st.plotly_chart(fig)
+
+    # Selectbox para valores únicos de las columnas seleccionadas
+    unique_x_values = df[x_axis].dropna().unique()
+    unique_y_values = df[y_axis].dropna().unique()
+
+    selected_x_value = st.selectbox(f'Selecciona un valor de {x_axis}', unique_x_values)
+    selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_values)
+
+    # Filtrar el dataframe según las selecciones
+    filtered_df = df.loc[(df[x_axis] == selected_x_value) & (df[y_axis] == selected_y_value)]
+
+    # Mostrar el dataframe filtrado
+    st.write('Dataframe filtrado:')
+    st.dataframe(filtered_df)
