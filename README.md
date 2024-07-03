@@ -27,3 +27,8 @@ git clone https://github.com/tu-usuario/tu-repositorio.git
 cd tu-repositorio
 pip install -r requirements.txt
 streamlit run app.py
+
+### Ejecución en Línea
+
+También puedes ejecutar la aplicación en línea a través de este enlace: [Vehicles US App](https://vehicles-us-wnm9.onrender.com).
+
