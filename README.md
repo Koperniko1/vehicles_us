@@ -27,6 +27,7 @@ git clone https://github.com/tu-usuario/tu-repositorio.git
 cd tu-repositorio
 pip install -r requirements.txt
 streamlit run app.py
+```
 
 ### Ejecución en Línea
 
