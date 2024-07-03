@@ -42,10 +42,12 @@ if st.button('Graficar'):
         x=x_axis,
         y=y_axis,
         size='count',
-        color='count',
         hover_name='count',
         title=f'Dispersión de {x_axis} vs {y_axis} con Tamaño de Burbujas por Cantidad'
     )
+    
+    # Establecer el color de las burbujas
+    fig.update_traces(marker=dict(color='salmon'))
     
     # Guardar la gráfica en el estado de la sesión para que persista
     st.session_state['fig'] = fig
@@ -59,6 +61,21 @@ if 'selected_x_value' not in st.session_state:
     st.session_state.selected_x_value = None
 if 'selected_y_value' not in st.session_state:
     st.session_state.selected_y_value = None
+
+# Texto explicativo para la sección de filtrado
+st.write("""
+### Filtrado de Datos
+
+Después de generar el gráfico de dispersión, puedes filtrar el dataframe según las variables seleccionadas para los ejes X y Y.
+
+1. **Selecciona un valor del eje X**: Esto actualizará la lista de valores disponibles para el eje Y.
+   
+2. **Selecciona un valor del eje Y**: Esto filtrará los datos y mostrará un dataframe con los registros que coincidan con ambos valores seleccionados.
+
+Opcional: puedes elegir las columnas que necesites del dataframe en caso de que no requieras toda la información.
+
+Utiliza estas opciones para explorar y analizar subconjuntos específicos de los datos.
+""")
 
 # Función para ordenar valores únicos
 def sort_unique_values(values):
@@ -83,6 +100,32 @@ selected_y_value = st.selectbox(f'Selecciona un valor de {y_axis}', unique_y_val
 if selected_x_value and selected_y_value:
     filtered_df = df.loc[(df[x_axis] == selected_x_value) & (df[y_axis] == selected_y_value)]
 
-    # Mostrar el dataframe filtrado
+    # Mostrar el dataframe filtrado con las columnas seleccionadas
     st.write('Dataframe filtrado:')
-    st.dataframe(filtered_df)
+    columns_to_show = st.multiselect('Selecciona las columnas para visualizar', filtered_df.columns)
+    if columns_to_show:
+        st.dataframe(filtered_df[columns_to_show])
+    else:
+        st.dataframe(filtered_df)
+
+    # Añadir sección para generar histograma
+    st.write("""
+    ### Generar Histograma
+    
+    Selecciona una columna y el número de bins para generar un histograma basado en los datos filtrados.
+    """)
+    
+    # Selección de la columna para el histograma
+    hist_column = st.selectbox('Selecciona la columna para el histograma', filtered_df.columns, key='hist_column')
+    
+    # Selección del número de bins
+    bins = st.number_input('Número de bins', min_value=1, max_value=100, value=10, step=1, key='bins')
+    
+    # Botón para generar el histograma
+    if st.button('Generar Histograma'):
+        fig_hist = px.histogram(filtered_df, x=hist_column, nbins=bins, title=f'Histograma de {hist_column} con {bins} bins')
+        
+        # Establecer el color de los bins
+        fig_hist.update_traces(marker=dict(color='salmon'))
+        
+        st.plotly_chart(fig_hist)

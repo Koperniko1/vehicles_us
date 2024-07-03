@@ -5,3 +5,9 @@ port = 10000
 [browser]
 serverAddress = "0.0.0.0"
 serverPort = 10000
+
+[theme]
+primaryColor="#ff592d"
+backgroundColor="#094c30"
+secondaryBackgroundColor="#1c6d17"
+textColor="#ffffff"
